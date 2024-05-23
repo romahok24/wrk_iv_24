@@ -33,18 +33,20 @@ CREATE TABLE LBAttributeCharacteristic (
 
 -- Таблица DateRangeAttribute
 CREATE TABLE DateRangeAttribute (
-    Id SERIAL PRIMARY KEY,
+    Id INT PRIMARY KEY,
     StartDateId INT NOT NULL,
     EndDateId INT NOT NULL,
     CONSTRAINT fk_daterangeattribute_startdate FOREIGN KEY (StartDateId) REFERENCES Characteristic (Id) ON DELETE CASCADE,
-    CONSTRAINT fk_daterangeattribute_enddate FOREIGN KEY (EndDateId) REFERENCES Characteristic (Id) ON DELETE CASCADE
-) INHERITS (LBAttribute);
+    CONSTRAINT fk_daterangeattribute_enddate FOREIGN KEY (EndDateId) REFERENCES Characteristic (Id) ON DELETE CASCADE,
+    CONSTRAINT fk_daterangeattribute_lbattribute FOREIGN KEY (Id) REFERENCES LBAttribute (Id) ON DELETE CASCADE
+);
 
 -- Таблица TimeRangeAttribute
 CREATE TABLE TimeRangeAttribute (
-    Id SERIAL PRIMARY KEY,
+    Id INT PRIMARY KEY,
     StartDateId INT NOT NULL,
     EndDateId INT NOT NULL,
     CONSTRAINT fk_timerangeattribute_startdate FOREIGN KEY (StartDateId) REFERENCES Characteristic (Id) ON DELETE CASCADE,
-    CONSTRAINT fk_timerangeattribute_enddate FOREIGN KEY (EndDateId) REFERENCES Characteristic (Id) ON DELETE CASCADE
-) INHERITS (LBAttribute);
+    CONSTRAINT fk_timerangeattribute_enddate FOREIGN KEY (EndDateId) REFERENCES Characteristic (Id) ON DELETE CASCADE,
+    CONSTRAINT fk_timerangeattribute_lbattribute FOREIGN KEY (Id) REFERENCES LBAttribute (Id) ON DELETE CASCADE
+);
