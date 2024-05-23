@@ -1,0 +1,184 @@
+public class LogicBlockAttributeType
+{
+    public int Id { get; set; }
+    public string Name { get; set; }
+    public LBAttributeType Type { get; set; }
+    public string Description { get; set; }
+    public List<LogicBlockAttribute> LogicBlockAttributes { get; set; }
+}
+public class Characteristic
+{
+    public int Id { get; set; }
+    public string Name { get; set; }
+    public int DataTypeId { get; set; }
+    public DataType DataType { get; set; }
+    public int LogicBlockId { get; set; }
+    public LogicBlock LogicBlock { get; set; }
+    public string Description { get; set; }
+    public string Value { get; set; }
+}
+public class LogicBlockAttribute
+{
+    public int Id { get; set; }
+    public int LogicBlockAttributeTypeId { get; set; }
+    public LogicBlockAttributeType LogicBlockAttributeType { get; set; }
+    public int LogicBlockId { get; set; }
+    public LogicBlock LogicBlock { get; set; }
+    public List<AttributeCharacteristic> AttributeCharacteristics { get; set; }
+}
+public class LogicBlockAttributeDateRange : LogicBlockAttribute
+{
+    public int StartDateId { get; set; }
+    public Characteristic StartDate { get; set; }
+    public int EndDateId { get; set; }
+    public Characteristic EndDate { get; set; }
+}
+public class LogicBlockAttributeTimeRange : LogicBlockAttribute
+{
+    public int StartTimeId { get; set; }
+    public Characteristic StartTime { get; set; }
+    public int EndTimeId { get; set; }
+    public Characteristic EndTime { get; set; }
+}
+public class IFTrueThenEmptyAttribute : LogicBlockAttribute
+{
+    public int FlagCharacteristicId { get; set; }
+    public Characteristic FlagCharacteristic { get; set; }
+}
+public class AttributeCharacteristic
+{
+    public int Id { get; set; }
+    public int LogicBlockAttributeId { get; set; }
+    public LogicBlockAttribute LogicBlockAttribute { get; set; }
+    public int CharacteristicId { get; set; }
+    public Characteristic Characteristic { get; set; }
+}
+public void AddAttributesToLogicBlock(MyDbContext context)
+{
+    // Создание логического блока
+    var logicBlock = new LogicBlock
+    {
+        Code = "LB001",
+        Name = "Sample Logic Block",
+        TableName = "SampleTable"
+    };
+    context.LogicBlocks.Add(logicBlock);
+    context.SaveChanges();
+
+    // Создание характеристик
+    var characteristic1 = new Characteristic
+    {
+        Name = "Characteristic 1",
+        DataTypeId = 1,
+        LogicBlockId = logicBlock.Id,
+        Description = "Description for Characteristic 1"
+    };
+
+    var characteristic2 = new Characteristic
+    {
+        Name = "Characteristic 2",
+        DataTypeId = 2,
+        LogicBlockId = logicBlock.Id,
+        Description = "Description for Characteristic 2"
+    };
+
+    context.Characteristics.AddRange(characteristic1, characteristic2);
+    context.SaveChanges();
+
+    // Создание типов атрибутов
+    var attributeTypeIsUnique = new LogicBlockAttributeType
+    {
+        Name = "IsUnique",
+        Type = LBAttributeType.IsUnique,
+        Description = "Unique combination of characteristics"
+    };
+
+    var attributeTypeOneFieldFilled = new LogicBlockAttributeType
+    {
+        Name = "OneFieldFilled",
+        Type = LBAttributeType.OneFieldFilled,
+        Description = "At least one field must be filled"
+    };
+
+    var attributeTypeDateRange = new LogicBlockAttributeType
+    {
+        Name = "DateRange",
+        Type = LBAttributeType.DateRange,
+        Description = "StartDate must be less than EndDate"
+    };
+
+    var attributeTypeTimeRange = new LogicBlockAttributeType
+    {
+        Name = "TimeRange",
+        Type = LBAttributeType.TimeRange,
+        Description = "StartTime must be less than EndTime"
+    };
+
+    var attributeTypeIfTrueThenEmpty = new LogicBlockAttributeType
+    {
+        Name = "IfTrueThenEmpty",
+        Type = LBAttributeType.IfTrueThenEmpty,
+        Description = "If flag is true, other fields must be empty"
+    };
+
+    context.LogicBlockAttributeTypes.AddRange(attributeTypeIsUnique, attributeTypeOneFieldFilled, attributeTypeDateRange, attributeTypeTimeRange, attributeTypeIfTrueThenEmpty);
+    context.SaveChanges();
+
+    // Создание атрибутов для логического блока
+    var attributeIsUnique = new LogicBlockAttribute
+    {
+        LogicBlockAttributeTypeId = attributeTypeIsUnique.Id,
+        LogicBlockId = logicBlock.Id,
+        AttributeCharacteristics = new List<AttributeCharacteristic>
+        {
+            new AttributeCharacteristic { Characteristic = characteristic1 },
+            new AttributeCharacteristic { Characteristic = characteristic2 }
+        }
+    };
+
+    var attributeOneFieldFilled = new LogicBlockAttribute
+    {
+        LogicBlockAttributeTypeId = attributeTypeOneFieldFilled.Id,
+        LogicBlockId = logicBlock.Id,
+        AttributeCharacteristics = new List<AttributeCharacteristic>
+        {
+            new AttributeCharacteristic { Characteristic = characteristic1 },
+            new AttributeCharacteristic { Characteristic = characteristic2 }
+        }
+    };
+
+    var attributeDateRange = new LogicBlockAttributeDateRange
+    {
+        LogicBlockAttributeTypeId = attributeTypeDateRange.Id,
+        LogicBlockId = logicBlock.Id,
+        StartDateId = characteristic1.Id,
+        EndDateId = characteristic2.Id
+    };
+
+    var attributeTimeRange = new LogicBlockAttributeTimeRange
+    {
+        LogicBlockAttributeTypeId = attributeTypeTimeRange.Id,
+        LogicBlockId = logicBlock.Id,
+        StartTimeId = characteristic1.Id,
+        EndTimeId = characteristic2.Id
+    };
+
+    var attributeIfTrueThenEmpty = new IFTrueThenEmptyAttribute
+    {
+        LogicBlockAttributeTypeId = attributeTypeIfTrueThenEmpty.Id,
+        LogicBlockId = logicBlock.Id,
+        FlagCharacteristicId = characteristic1.Id,
+        AttributeCharacteristics = new List<AttributeCharacteristic>
+        {
+            new AttributeCharacteristic { Characteristic = characteristic2 }
+        }
+    };
+
+    context.LogicBlockAttributes.Add(attributeIsUnique);
+    context.LogicBlockAttributes.Add(attributeOneFieldFilled);
+    context.LogicBlockAttributeDateRanges.Add(attributeDateRange);
+    context.LogicBlockAttributeTimeRanges.Add(attributeTimeRange);
+    context.IFTrueThenEmptyAttributes.Add(attributeIfTrueThenEmpty);
+
+    context.SaveChanges();
+}
